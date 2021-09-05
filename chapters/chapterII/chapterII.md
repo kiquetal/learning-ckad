@@ -89,7 +89,9 @@
 
   kubectl describe pods hazelcast
   kubectl logs hazelcast
-  
+
+  kubectl describe pods hazelcast | grep Image:
+
 #### Log in the container
 
   kubectl exec -it hazelcast -- /bin/sh
@@ -110,4 +112,18 @@ spec:
   restartPolicy: Never
 
   ```
+ Alternative to could create via the imperative approach.
 
+  ```bash
+kubectl run mypod --image=busybox -o yaml --dry-run=client --restart=Never \
+  > pod.yaml -- /bin/sh -c "while true; do date; sleep 10; done"
+  ```
+
+#### Namespace
+
+  Usefull to isolate applications
+  
+    kubectl create namespace code-red
+  
+    kubectl run pod --image=nginx --restart=Never -n code-red 
+    kubectl get pods -n code-red
