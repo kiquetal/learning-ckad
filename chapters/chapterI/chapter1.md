@@ -23,3 +23,18 @@
 
 ![](./images/components.png)
 
+
+#### Deleteing kubernetes objects
+
+    k8s will try to delete gracefully the pod, within 30 secs.
+
+    kubectl delete pod nginx --grace-period=0 --force
+
+### Combining linux command to obtain info about infra
+
+    kubectl describe pods | grep -C 10 "author=John Doe"
+    kubectl get pods -o yaml | grep -C 5 labels:
+
+
+
+
