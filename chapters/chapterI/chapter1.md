@@ -35,6 +35,9 @@
     kubectl describe pods | grep -C 10 "author=John Doe"
     kubectl get pods -o yaml | grep -C 5 labels:
 
+    kubectl explain pods.spec
+
+
 
 
 
