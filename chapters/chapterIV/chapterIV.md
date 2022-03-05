@@ -42,6 +42,8 @@ spec:
     are not part of the main traffic or API of the primary application. They usually
     operate asynchronouly and are not involved in the public API.
 
+
+![](../imagesForChapters/side-container.png)
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -72,6 +74,8 @@ spec:
     A sidecar container executes transformation logic that turns the log entries
     into the format needed by the external system without having to change application
     logic.
+
+![](../imagesForChapters/adapter-pattern.png)
 
 ```yaml
 apiVersion: v1
@@ -136,7 +140,7 @@ spec:
     Any calls made from the bussiness application need to be funneled through the ambassador
     container.
 
-
+![](../imagesForChapters/ambassador-pattern.png)
 ```yaml
 apiVersion: v1
 kind: Pod
