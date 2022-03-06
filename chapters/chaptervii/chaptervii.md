@@ -79,5 +79,113 @@ Accessing pod within cluster
     Declaring a service with the type NodePort exposes access through the node's IP
     address and can be resolved from outside of the kubernetes cluster.
     The node's ip address can b ereached in combination with a port number.
-    
-    
+
+
+Changing the type of Service
+
+    $ kubectl patch service nginx -p '{ "spec": {"type": "NodePort"} }'
+    service/nginx patched
+    $ kubectl get service nginx
+    NAME    TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+    nginx   NodePort   10.96.225.204   <none>        80:32300/TCP   3d21h
+
+Now we need to obtain the node ips address 
+
+    $ kubectl get nodes
+    NAME       STATUS   ROLES    AGE   VERSION
+    minikube   Ready    master   91d   v1.18.3
+    $ kubectl describe node minikube | grep InternalIP:
+    InternalIP:  192.168.64.2
+    $ curl 192.168.64.2:32300
+
+#### Deployments and Services
+
+    A deployment manages Pods and their replication. A service route network reqeuests to
+    a set of Pods.
+
+![](../imagesForChapters/service-deployments.png)
+
+   Using Network Policy to restrict access from pod to a pod.
+
+#### Attributes for a network policy
+
+| Attribute | Description |
+| -------- | ------------ |
+| podSelector | Selects the POds in namespace to apply the network policy to.|
+| policyType | Defines the type of traffic  |
+| ingress | List the rules for incoming traffic. Each rule can define from and ports|
+| egress | Lists the rules for outgoing traffic. Each rule can define to and ports sections|
+
+
+### Example
+
+![](../imagesForChapters/network-policy.png)
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-allow
+spec:
+  podSelector:
+    matchLabels:
+      app: payment-processor
+      role: api
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: coffeeshop
+```
+
+    $ kubectl run payment-processor --image=nginx --restart=Never \
+    -l app=payment-processor,role=api --port 80
+    pod/payment-processor created
+    $ kubectl get pods -o wide
+    NAME              READY STATUS  RESTARTS AGE   IP        NODE     NOMINATED NODE \
+    READINESS GATES
+    payment-processor 1/1   Running 0        6m43s 10.0.0.51 minikube <none> \
+    <none>
+    $ kubectl create -f networkpolicy-api-allow.yaml
+    networkpolicy.networking.k8s.io/api-allow created
+
+#### Listing Network Policies
+
+    $ kubectl get networkpolicy
+    NAME         POD-SELECTOR                     AGE
+    api-allow    app=payment-processor,role=api   83m
+
+#### Isolating All Pods in Namespace
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+```
+
+### Restrict port from access to
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: port-allow
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: frontend
+    ports:
+    - protocol: TCP
+      port: 8080
+```
